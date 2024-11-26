@@ -68,13 +68,13 @@ contract DSCEngine {
         uint256 newMintedStableCoin = accountInfo[msg.sender].mintedStableCoin +
             _stableCoinAmount;
 
+        collateralBalances[msg.sender][_collateralToken] += _collateralAmount;
         require(
-            calculateHealthFactor(newTotalCollateral, newMintedStableCoin) >=
+            calculateHealthFactor(msg.sender, newMintedStableCoin) >=
                 MIN_HEALTH_FACTOR,
             "[WARNING] Health factor too low"
         );
 
-        collateralBalances[msg.sender][_collateralToken] += _collateralAmount;
         accountInfo[msg.sender].totalCollateralUSD = newTotalCollateral;
         accountInfo[msg.sender].mintedStableCoin = newMintedStableCoin;
 
@@ -106,7 +106,7 @@ contract DSCEngine {
             _stableCoinAmount;
 
         require(
-            calculateHealthFactor(newTotalCollateral, newMintedStableCoin) >=
+            calculateHealthFactor(msg.sender, newMintedStableCoin) >=
                 MIN_HEALTH_FACTOR,
             "[WARNING] Health factor too low"
         );
@@ -122,10 +122,8 @@ contract DSCEngine {
     function liquidate(address _user) external {
         AccountInfo memory userAccountInfo = accountInfo[_user];
         require(
-            calculateHealthFactor(
-                userAccountInfo.totalCollateralUSD,
-                userAccountInfo.mintedStableCoin
-            ) < MIN_HEALTH_FACTOR,
+            calculateHealthFactor(_user, userAccountInfo.mintedStableCoin) <
+                MIN_HEALTH_FACTOR,
             "[ERROR] Health factor sufficient"
         );
 
@@ -153,11 +151,21 @@ contract DSCEngine {
     }
 
     function calculateHealthFactor(
-        uint256 _totalCollateralUSD,
+        address _user,
         uint256 _mintedStableCoin
-    ) public pure returns (uint256) {
+    ) public view returns (uint256) {
         if (_mintedStableCoin == 0) return type(uint256).max;
-        return (_totalCollateralUSD * USD_DECIMALS) / _mintedStableCoin;
+
+        uint256 totalCollateralUSD = 0;
+        for (uint256 i = 0; i < acceptedCollateralTokens.length; i++) {
+            address token = acceptedCollateralTokens[i];
+            totalCollateralUSD += getCollateralValue(
+                token,
+                collateralBalances[_user][token]
+            );
+        }
+
+        return (totalCollateralUSD * USD_DECIMALS) / _mintedStableCoin;
     }
 
     function getCollateralValue(
