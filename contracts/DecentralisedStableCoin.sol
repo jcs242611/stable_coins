@@ -1,32 +1,25 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.27;
 
-contract DecentralizedStableCoin {
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract DecentralizedStableCoin is ERC20 {
     address private owner;
-    uint256 private totalSupply;
-    mapping(address => uint256) private balances;
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the owner");
-        _;
-    }
-
-    constructor() {
+    constructor() ERC20("DecentralizedStableCoin", "DSC") {
         owner = msg.sender;
     }
 
-    function mint(address _to, uint256 _amount) public onlyOwner {
-        require(_to != address(0), "Mint to the zero address");
-
-        totalSupply += _amount;
-        balances[_to] += _amount;
+    modifier onlyOwner() {
+        require(msg.sender == owner, "[ERROR] You are not the owner");
+        _;
     }
 
-    function burn(address _from, uint256 _amount) public onlyOwner {
-        require(_from != address(0), "Burn from the zero address");
-        require(balances[_from] >= _amount, "Burn amount exceeds balance");
+    function mint(address _to, uint256 _amount) external onlyOwner {
+        _mint(_to, _amount);
+    }
 
-        balances[_from] -= _amount;
-        totalSupply -= _amount;
+    function burn(address _from, uint256 _amount) external onlyOwner {
+        _burn(_from, _amount);
     }
 }
