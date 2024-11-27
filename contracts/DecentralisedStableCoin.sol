@@ -11,7 +11,7 @@ contract DecentralizedStableCoin is ERC20 {
     }
 
     modifier onlyOwner() {
-        // Commented below statement because then users are not deposit and redeem without owner privileges
+        // Commented below statement because then users are not able to deposit and redeem without owner privileges
         // require(msg.sender != owner, "[ERROR] You are not the owner");
         _;
     }
