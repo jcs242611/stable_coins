@@ -5,14 +5,17 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract DecentralizedStableCoin is ERC20 {
     address private owner;
+    address public sc;
 
     constructor() ERC20("DecentralizedStableCoin", "DSC") {
         owner = msg.sender;
     }
 
     modifier onlyOwner() {
-        // Commented below statement because then users are not able to deposit and redeem without owner privileges
-        // require(msg.sender != owner, "[ERROR] You are not the owner");
+        require(
+            msg.sender == owner || msg.sender == sc,
+            "[ERROR] You are not the owner"
+        );
         _;
     }
 
@@ -22,5 +25,10 @@ contract DecentralizedStableCoin is ERC20 {
 
     function burn(address _from, uint256 _amount) external onlyOwner {
         _burn(_from, _amount);
+    }
+
+    function allowSingleSC(address _sc) external onlyOwner {
+        require(_sc != address(0), "[ERROR] Invalid address");
+        sc = _sc;
     }
 }

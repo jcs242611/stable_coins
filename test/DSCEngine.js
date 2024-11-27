@@ -36,16 +36,17 @@ describe("Stable Coins", function () {
     const accounts = await ethers.getSigners();
     [owner, user1, user2] = accounts.slice(0, 3);
 
+    await stableCoin.connect(owner).allowSingleSC(dscEngine.getAddress());
     await collateralToken.transfer(user1.address, COLLATERAL_AMOUNT);
   });
 
   describe("Deposit collateral and mint", function () {
     it("should allow a user to deposit collateral and mint stable coins", async () => {
       await collateralToken
-        .connect(owner)
+        .connect(user1)
         .approve(dscEngine.getAddress(), COLLATERAL_AMOUNT);
       await dscEngine
-        .connect(owner)
+        .connect(user1)
         .depositCollateralAndMint(
           collateralToken.getAddress(),
           COLLATERAL_AMOUNT,
@@ -53,17 +54,17 @@ describe("Stable Coins", function () {
         );
 
       const userCollateralBalance = await dscEngine.getCollateralBalanceOfUser(
-        owner.address,
+        user1.address,
         collateralToken.getAddress()
       );
       const userAccountInfo = await dscEngine.getAccountInformation(
-        owner.address
+        user1.address
       );
 
       expect(userCollateralBalance).to.equal(COLLATERAL_AMOUNT);
       expect(userAccountInfo[1]).to.equal(STABLECOIN_AMOUNT);
 
-      const stableCoinBalance = await stableCoin.balanceOf(owner.address);
+      const stableCoinBalance = await stableCoin.balanceOf(user1.address);
       expect(stableCoinBalance).to.equal(STABLECOIN_AMOUNT);
     });
 
@@ -75,12 +76,12 @@ describe("Stable Coins", function () {
       );
       await unacceptedToken.transfer(user1.address, COLLATERAL_AMOUNT);
       await unacceptedToken
-        .connect(owner)
+        .connect(user1)
         .approve(dscEngine.getAddress(), COLLATERAL_AMOUNT);
 
       await expect(
         dscEngine
-          .connect(owner)
+          .connect(user1)
           .depositCollateralAndMint(
             unacceptedToken.getAddress(),
             COLLATERAL_AMOUNT,
@@ -110,10 +111,10 @@ describe("Stable Coins", function () {
   describe("Redeem collateral for stable coin", function () {
     it("should allow a user to redeem collateral for stable coins", async function () {
       await collateralToken
-        .connect(owner)
+        .connect(user1)
         .approve(dscEngine.getAddress(), COLLATERAL_AMOUNT);
       await dscEngine
-        .connect(owner)
+        .connect(user1)
         .depositCollateralAndMint(
           collateralToken.getAddress(),
           COLLATERAL_AMOUNT,
@@ -121,23 +122,23 @@ describe("Stable Coins", function () {
         );
 
       const initialStableCoinBalance = await stableCoin.balanceOf(
-        owner.address
+        user1.address
       );
       const initialCollateralBalance = await collateralToken.balanceOf(
-        owner.address
+        user1.address
       );
 
       await dscEngine
-        .connect(owner)
+        .connect(user1)
         .redeemCollateralForStableCoin(
           collateralToken.getAddress(),
           COLLATERAL_AMOUNT,
           STABLECOIN_AMOUNT
         );
 
-      const finalStableCoinBalance = await stableCoin.balanceOf(owner.address);
+      const finalStableCoinBalance = await stableCoin.balanceOf(user1.address);
       const finalCollateralBalance = await collateralToken.balanceOf(
-        owner.address
+        user1.address
       );
 
       expect(finalStableCoinBalance).to.equal(
