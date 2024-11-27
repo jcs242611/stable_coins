@@ -108,7 +108,7 @@ describe("Stable Coins", function () {
   });
 
   describe("Redeem collateral for stable coin", function () {
-    it("should allow owner to redeem collateral for stablecoins", async function () {
+    it("should allow a user to redeem collateral for stable coins", async function () {
       await collateralToken
         .connect(owner)
         .approve(dscEngine.getAddress(), COLLATERAL_AMOUNT);
@@ -148,7 +148,7 @@ describe("Stable Coins", function () {
       );
     });
 
-    it("should revert if the owner doesn't have enough collateral", async function () {
+    it("should revert if the user doesn't have enough collateral", async function () {
       await expect(
         dscEngine
           .connect(user1)
