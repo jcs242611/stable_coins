@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract DecentralizedStableCoin is ERC20 {
     address private owner;
-    address public sc;
+    address private sc;
 
     constructor() ERC20("DecentralizedStableCoin", "DSC") {
         owner = msg.sender;
